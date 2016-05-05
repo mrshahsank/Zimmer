@@ -13,6 +13,10 @@ import android.widget.RelativeLayout;
 
 import com.shanky.zimmer.Utils.CommonVarUtils;
 import com.shanky.zimmer.adapter.ColorAdapter;
+import com.shanky.zimmer.storege.ColorItemStorageHelper;
+import com.shanky.zimmer.storege.model.ColorCircleItem;
+
+import org.json.JSONArray;
 
 import java.util.ArrayList;
 
@@ -28,13 +32,15 @@ public class HomeActivity extends AppCompatActivity {
     private ArrayList<Integer> colorArrayList;
     private int currentSelectedCode = -1;
     private ArrayList<Button> colorButtons;
-    private int colorButtonCount = 0;
+    private int colorButtonCount = -1;
+    private ColorItemStorageHelper colorItemStorageHelper;
 
     @Override
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        colorItemStorageHelper = new ColorItemStorageHelper(HomeActivity.this);
         //currentSelectedCode = getResources().getColor(R.color.colorWhite);
         resetButton = (Button) findViewById(R.id.resetButton);
         undoButton = (Button) findViewById(R.id.undoButton);
@@ -70,14 +76,22 @@ public class HomeActivity extends AppCompatActivity {
                             return false;
                         }
                     });
+
                     lp.setMargins(x - size / 2, y - size, 0, 0);
                     colorButton.setLayoutParams(lp);
                     colorButton.setBackground(getResources().getDrawable(
                             R.drawable.circular_button));
                     GradientDrawable drawable = (GradientDrawable) colorButton.getBackground();
                     drawable.setColor(currentSelectedCode);
-                    colorButtons.add(colorButtonCount, colorButton);
                     colorButtonCount++;
+                    colorButtons.add(colorButtonCount, colorButton);
+                    ColorCircleItem colorCircleItem = new ColorCircleItem();
+                    colorCircleItem.INDEX = colorButtonCount;
+                    colorCircleItem.COLOR_CODE = currentSelectedCode;
+                    colorCircleItem.POSITION_X = x;
+                    colorCircleItem.POSITION_Y = y;
+                    colorCircleItem.SIZE = size;
+                    colorItemStorageHelper.insertNewColorButton(colorCircleItem);
                     ((ViewGroup) v).addView(colorButton);
                 }
                 return false;
@@ -89,16 +103,20 @@ public class HomeActivity extends AppCompatActivity {
             public void onClick(View v) {
                 resetView(bodyLayout);
                 colorButtons = new ArrayList<>();
-                colorButtonCount = 0;
+                colorButtonCount = -1;
+                colorItemStorageHelper.resetAllColorButton();
             }
         });
 
         undoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                bodyLayout.removeView(colorButtons.get(colorButtonCount - 1));
-                colorButtons.remove(colorButtonCount - 1);
-                colorButtonCount--;
+                if (colorButtonCount != -1) {
+                    bodyLayout.removeView(colorButtons.get(colorButtonCount));
+                    colorButtons.remove(colorButtonCount);
+                    colorItemStorageHelper.deleteNewColorButton(colorButtonCount);
+                    colorButtonCount--;
+                }
             }
         });
     }
@@ -116,6 +134,16 @@ public class HomeActivity extends AppCompatActivity {
         colorArrayList.add(getResources().getColor(R.color.colorBrown));//browm
         colorArrayList.add(getResources().getColor(R.color.colorGray));//gray
         colorArrayList.add(getResources().getColor(R.color.colorBlack));//black
+
+        /*JSONArray colorSavedRecord = colorItemStorageHelper.getColorItemRecords();
+        for (int i = 0; i < colorSavedRecord.length(); i++) {
+
+            colorRecordJsonObject.put("color_code", colorCircleItem.COLOR_CODE);
+            colorRecordJsonObject.put("position_x", colorCircleItem.POSITION_X);
+            colorRecordJsonObject.put("position_Y", colorCircleItem.POSITION_Y);
+            colorRecordJsonObject.put("size", colorCircleItem.SIZE);
+            colorRecordJsonObject.put("index", colorCircleItem.INDEX);
+        }*/
     }
 
     public void currentSelectedColor(int colorCode) {

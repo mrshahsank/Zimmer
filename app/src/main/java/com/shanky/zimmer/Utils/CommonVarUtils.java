@@ -7,4 +7,5 @@ public class CommonVarUtils {
     public static final int DELTA_RADIOUS = 10;
 
     public static final String COLOR_STORE_SHAREDPREF = "color_shared_pref_store";
+    public static final String COLOR_RECORDS = "color_records";
 }
