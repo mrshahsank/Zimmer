@@ -16,6 +16,7 @@ import java.util.ArrayList;
 
 /**
  * Created by Shashank on 03-05-2016.
+ *  Adapter helps to manage color items in recycler view
  */
 public class ColorAdapter extends RecyclerView.Adapter<ColorViewHolder> {
 

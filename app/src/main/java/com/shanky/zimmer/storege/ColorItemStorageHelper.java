@@ -14,6 +14,7 @@ import org.json.JSONObject;
 
 /**
  * Created by USER on 06-05-2016.
+ * Helper class to manage storege of circular color buttons in shared preference
  */
 public class ColorItemStorageHelper {
     private SharedPreferences colorItemStore;
@@ -27,6 +28,11 @@ public class ColorItemStorageHelper {
         colorItemStoreEditor = colorItemStore.edit();
     }
 
+    /**
+     * Method to insert circular color button info
+     *
+     * @param colorCircleItem
+     */
     public void insertNewColorButton(ColorCircleItem colorCircleItem) {
 
         try {
@@ -44,6 +50,12 @@ public class ColorItemStorageHelper {
         }
     }
 
+    /**
+     * Method to update size of circular color button according to index
+     *
+     * @param colorCircleItemIndex
+     * @param newSize
+     */
     public void updateSizeNewColorButton(int colorCircleItemIndex, int newSize) {
 
         try {
@@ -57,6 +69,11 @@ public class ColorItemStorageHelper {
         }
     }
 
+    /**
+     * Method to delete circular color button item from shardpref
+     *
+     * @param colorCircleItemIndex
+     */
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public void deleteNewColorButton(int colorCircleItemIndex) {
 
@@ -69,10 +86,18 @@ public class ColorItemStorageHelper {
         }
     }
 
+    /**
+     * Method to reset all color buttons ie it deletes all circular color items from shred preferences
+     */
     public void resetAllColorButton() {
         colorItemStoreEditor.putString(CommonVarUtils.COLOR_RECORDS, new JSONArray().toString()).commit();
     }
 
+    /**
+     * Method to get all circular color buttons items
+     *
+     * @return
+     */
     public JSONArray getColorItemRecords() {
         try {
             return new JSONArray(colorItemStore.getString(CommonVarUtils.COLOR_RECORDS, new JSONArray().toString()));

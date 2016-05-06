@@ -32,10 +32,10 @@ public class HomeActivity extends AppCompatActivity {
     private Button resetButton;
     private Button undoButton;
 
-    private ArrayList<Integer> colorArrayList;
-    private int currentSelectedCode = -1;
-    private ArrayList<ColorCircularButton> colorButtons;
-    private int colorButtonCount = -1;
+    private ArrayList<Integer> colorArrayList;// to maintain colors codes
+    private int currentSelectedCode = -1;// represents current seleced color from list
+    private ArrayList<ColorCircularButton> colorButtons;// maintains reference of added color circular buttons
+    private int colorButtonCount = -1;// count of existing color circular buttons
     private ColorItemStorageHelper colorItemStorageHelper;
 
     @Override
@@ -57,18 +57,23 @@ public class HomeActivity extends AppCompatActivity {
         initColorList();
         mColorAdapter = new ColorAdapter(HomeActivity.this, colorArrayList);
         colorRecyclerView.setAdapter(mColorAdapter);
+
+        // on touch of white background adds new circular color button
         bodyLayout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (currentSelectedCode != -1 && event.getAction() == MotionEvent.ACTION_DOWN) {
+                    //get position of touch
                     final int x = (int) event.getX();
                     final int y = (int) event.getY();
-                    final int size = (int) getResources().getDimension(R.dimen.color_item_size);
+                    final int size = (int) getResources().getDimension(R.dimen.color_item_size);//default initial size
+
                     RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
                             size,
                             size);
                     final Button colorButton = new Button(getApplicationContext());
                     colorButton.setTag(colorButtonCount + 1);
+                    // on long click increases radious be delta radious
                     colorButton.setOnLongClickListener(new View.OnLongClickListener() {
                         @Override
                         public boolean onLongClick(View v) {
@@ -116,7 +121,7 @@ public class HomeActivity extends AppCompatActivity {
                 return false;
             }
         });
-
+        // on reset button click removes all circular color buttons
         resetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -127,6 +132,7 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
+        // on undo button click removes last added circular color button
         undoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -140,6 +146,9 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Method to initialize color array and loads saves circular color buttons
+     */
     public void initColorList() {
         colorArrayList = new ArrayList<>();
         colorArrayList.add(getResources().getColor(R.color.colorWhite));//white
@@ -156,10 +165,20 @@ public class HomeActivity extends AppCompatActivity {
         initColorButtons();
     }
 
+    /**
+     * Method to get current seleced color
+     *
+     * @param colorCode
+     */
     public void currentSelectedColor(int colorCode) {
         currentSelectedCode = colorCode;
     }
 
+    /**
+     * Method to remove all chield views
+     *
+     * @param v
+     */
     private void resetView(ViewGroup v) {
         boolean doBreak = false;
         while (!doBreak) {
@@ -180,6 +199,9 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Method to load previously saved circular color  buttons
+     */
     private void initColorButtons() {
 
         JSONArray colorSavedRecord = colorItemStorageHelper.getColorItemRecords();
