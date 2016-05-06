@@ -13,10 +13,13 @@ import android.widget.RelativeLayout;
 
 import com.shanky.zimmer.Utils.CommonVarUtils;
 import com.shanky.zimmer.adapter.ColorAdapter;
+import com.shanky.zimmer.model.ColorCircularButton;
 import com.shanky.zimmer.storege.ColorItemStorageHelper;
 import com.shanky.zimmer.storege.model.ColorCircleItem;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -31,7 +34,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private ArrayList<Integer> colorArrayList;
     private int currentSelectedCode = -1;
-    private ArrayList<Button> colorButtons;
+    private ArrayList<ColorCircularButton> colorButtons;
     private int colorButtonCount = -1;
     private ColorItemStorageHelper colorItemStorageHelper;
 
@@ -65,14 +68,21 @@ public class HomeActivity extends AppCompatActivity {
                             size,
                             size);
                     final Button colorButton = new Button(getApplicationContext());
+                    colorButton.setTag(colorButtonCount + 1);
                     colorButton.setOnLongClickListener(new View.OnLongClickListener() {
                         @Override
                         public boolean onLongClick(View v) {
+                            int index = (int) colorButton.getTag();
+                            ColorCircularButton colorCircularButton = colorButtons.get(index);
+                            int newSize = colorCircularButton.SIZE + CommonVarUtils.DELTA_RADIOUS;
                             RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
-                                    size + CommonVarUtils.DELTA_RADIOUS,
-                                    size + CommonVarUtils.DELTA_RADIOUS);
-                            lp.setMargins(x - (size + CommonVarUtils.DELTA_RADIOUS) / 2, y - (size + CommonVarUtils.DELTA_RADIOUS) / 2, 0, 0);
+                                    newSize,
+                                    newSize);
+                            lp.setMargins(x - newSize / 2, y - newSize / 2, 0, 0);
                             colorButton.setLayoutParams(lp);
+                            colorCircularButton.SIZE = newSize;
+                            colorButtons.set(colorCircularButton.INDEX, colorCircularButton);
+                            colorItemStorageHelper.updateSizeNewColorButton(index, newSize);
                             return false;
                         }
                     });
@@ -84,7 +94,16 @@ public class HomeActivity extends AppCompatActivity {
                     GradientDrawable drawable = (GradientDrawable) colorButton.getBackground();
                     drawable.setColor(currentSelectedCode);
                     colorButtonCount++;
-                    colorButtons.add(colorButtonCount, colorButton);
+
+                    ColorCircularButton colorCircularButton = new ColorCircularButton();
+                    colorCircularButton.COLOR_BUTTON = colorButton;
+                    colorCircularButton.INDEX = colorButtonCount;
+                    colorCircularButton.POSITION_X = x;
+                    colorCircularButton.POSITION_Y = y;
+                    colorCircularButton.SIZE = size;
+
+                    colorButtons.add(colorButtonCount, colorCircularButton);
+
                     ColorCircleItem colorCircleItem = new ColorCircleItem();
                     colorCircleItem.INDEX = colorButtonCount;
                     colorCircleItem.COLOR_CODE = currentSelectedCode;
@@ -112,7 +131,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (colorButtonCount != -1) {
-                    bodyLayout.removeView(colorButtons.get(colorButtonCount));
+                    bodyLayout.removeView(colorButtons.get(colorButtonCount).COLOR_BUTTON);
                     colorButtons.remove(colorButtonCount);
                     colorItemStorageHelper.deleteNewColorButton(colorButtonCount);
                     colorButtonCount--;
@@ -134,16 +153,7 @@ public class HomeActivity extends AppCompatActivity {
         colorArrayList.add(getResources().getColor(R.color.colorBrown));//browm
         colorArrayList.add(getResources().getColor(R.color.colorGray));//gray
         colorArrayList.add(getResources().getColor(R.color.colorBlack));//black
-
-        /*JSONArray colorSavedRecord = colorItemStorageHelper.getColorItemRecords();
-        for (int i = 0; i < colorSavedRecord.length(); i++) {
-
-            colorRecordJsonObject.put("color_code", colorCircleItem.COLOR_CODE);
-            colorRecordJsonObject.put("position_x", colorCircleItem.POSITION_X);
-            colorRecordJsonObject.put("position_Y", colorCircleItem.POSITION_Y);
-            colorRecordJsonObject.put("size", colorCircleItem.SIZE);
-            colorRecordJsonObject.put("index", colorCircleItem.INDEX);
-        }*/
+        initColorButtons();
     }
 
     public void currentSelectedColor(int colorCode) {
@@ -167,6 +177,72 @@ public class HomeActivity extends AppCompatActivity {
             if (i == childCount) {
                 doBreak = true;
             }
+        }
+    }
+
+    private void initColorButtons() {
+
+        JSONArray colorSavedRecord = colorItemStorageHelper.getColorItemRecords();
+        try {
+            for (int i = 0; i < colorSavedRecord.length(); i++) {
+
+                JSONObject colorRecordJsonObject = colorSavedRecord.getJSONObject(i);
+                int colorCode = colorRecordJsonObject.getInt("color_code");
+                final int x = colorRecordJsonObject.getInt("position_x");
+                final int y = colorRecordJsonObject.getInt("position_y");
+                final int size = colorRecordJsonObject.getInt("size");
+
+                RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+                        size,
+                        size);
+                final Button colorButton = new Button(getApplicationContext());
+                colorButton.setTag(colorButtonCount + 1);
+                colorButton.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        int index = (int) colorButton.getTag();
+                        ColorCircularButton colorCircularButton = colorButtons.get(index);
+                        int newSize = colorCircularButton.SIZE + CommonVarUtils.DELTA_RADIOUS;
+                        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+                                newSize,
+                                newSize);
+                        lp.setMargins(x - newSize / 2, y - newSize / 2, 0, 0);
+                        colorButton.setLayoutParams(lp);
+                        colorCircularButton.SIZE = newSize;
+                        colorButtons.set(colorCircularButton.INDEX, colorCircularButton);
+                        colorItemStorageHelper.updateSizeNewColorButton(index, newSize);
+                        return false;
+                    }
+                });
+
+                lp.setMargins(x - size / 2, y - size, 0, 0);
+                colorButton.setLayoutParams(lp);
+                colorButton.setBackground(getResources().getDrawable(
+                        R.drawable.circular_button));
+                GradientDrawable drawable = (GradientDrawable) colorButton.getBackground();
+                drawable.setColor(colorCode);
+                colorButtonCount++;
+
+                ColorCircularButton colorCircularButton = new ColorCircularButton();
+                colorCircularButton.COLOR_BUTTON = colorButton;
+                colorCircularButton.INDEX = colorButtonCount;
+                colorCircularButton.POSITION_X = x;
+                colorCircularButton.POSITION_Y = y;
+                colorCircularButton.SIZE = size;
+
+                colorButtons.add(colorButtonCount, colorCircularButton);
+
+                ColorCircleItem colorCircleItem = new ColorCircleItem();
+                colorCircleItem.INDEX = colorButtonCount;
+                colorCircleItem.COLOR_CODE = colorCode;
+                colorCircleItem.POSITION_X = x;
+                colorCircleItem.POSITION_Y = y;
+                colorCircleItem.SIZE = size;
+                colorItemStorageHelper.insertNewColorButton(colorCircleItem);
+                ((ViewGroup) bodyLayout).addView(colorButton);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 }
